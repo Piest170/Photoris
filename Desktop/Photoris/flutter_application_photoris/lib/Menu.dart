@@ -385,7 +385,6 @@ class _MenuState extends State<Menu> {
             ),
           ),
           SizedBox(height: 20, width: 20),
-
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: GridView.count(
@@ -447,71 +446,6 @@ class _MenuState extends State<Menu> {
                     ),
                 ]),
           )
-
-          // Container(
-          //   height: 80,
-          //   margin: EdgeInsets.only(top: 20),
-          //   child: GridView.count(
-          //     crossAxisCount: 2,
-          //     padding: EdgeInsets.symmetric(vertical: 5),
-          //     crossAxisSpacing: 0,
-          //     mainAxisSpacing: 0,
-          //     childAspectRatio: 0.65,
-          //     children: [
-          //       Column(
-          //         children: [
-          //           Padding(
-          //             padding: const EdgeInsets.only(left: 0),
-          //             child: Container(
-          //               height: 200,
-          //               width: 160,
-          //               decoration: BoxDecoration(
-          //                 color: Colors.white,
-          //                 borderRadius: BorderRadius.circular(20),
-          //                 boxShadow: [
-          //                   BoxShadow(
-          //                     color: Colors.grey,
-          //                     spreadRadius: 5,
-          //                     blurRadius: 7,
-          //                     offset:
-          //                         Offset(0, 3), // changes position of shadow
-          //                   ),
-          //                 ],
-          //               ),
-          //               child: Column(
-          //                 children: [
-          //                   ClipRRect(
-          //                     borderRadius: BorderRadius.circular(20),
-          //                     child: Image.asset(
-          //                       "photo/cat.jpeg",
-          //                       height: 160,
-          //                       width: 160,
-          //                     ),
-          //                   ),
-          //                   Padding(
-          //                     padding: const EdgeInsets.only(top: 10),
-          //                     child: TextButton(
-          //                       onPressed: () {},
-          //                       child: Text(
-          //                         "Myname",
-          //                         style: TextStyle(
-          //                           color: Colors.black,
-          //                           fontSize: 25,
-          //                           fontFamily: 'Roboto',
-          //                           fontWeight: FontWeight.w700,
-          //                         ),
-          //                       ),
-          //                     ),
-          //                   ),
-          //                 ],
-          //               ),
-          //             ),
-          //           ),
-          //         ],
-          //       ),
-          //     ],
-          //   ),
-          // )
         ],
       ),
     );
