@@ -19,6 +19,7 @@ class Auth {
           fullname: fullname,
           userid: userCredential.user!.uid,
           email: email,
+          password: password,
           phone: phone,
           photo: '',
           lineId: '-',

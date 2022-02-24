@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class UserModel {
   final String userid;
   final String email;
+  final String password;
   final String fullname;
   final String photo;
   final String phone;
@@ -13,6 +14,7 @@ class UserModel {
   UserModel(
       {required this.userid,
       required this.email,
+      required this.password,
       required this.fullname,
       required this.photo,
       required this.phone,
@@ -30,6 +32,7 @@ class UserService {
       "userid": user.userid,
       "fullname": user.fullname,
       "email": user.email,
+      "password": user.password,
       "photo": user.photo,
       "phone": user.phone,
       "lineId": user.lineId,
