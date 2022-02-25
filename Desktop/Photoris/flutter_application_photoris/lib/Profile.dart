@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_photoris/Upgrade_Account.dart';
 
+import 'editProfile.dart';
+
 class Profile extends StatelessWidget {
   Profile({Key? key}) : super(key: key);
 
@@ -300,8 +302,7 @@ class Man extends StatelessWidget {
                         color: Colors.white,
                         letterSpacing: 1.5,
                         fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'OpenSans'),
+                        fontWeight: FontWeight.bold),
                   ),
                 ],
               ),

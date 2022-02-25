@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_photoris/Search.dart';
 
 import 'Profile.dart';
 
@@ -19,9 +20,6 @@ class theme extends StatelessWidget {
               height: 125,
               width: double.infinity,
               child: AppBar(
-                shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(bottom: Radius.circular(25))),
                 backgroundColor: Colors.pinkAccent,
                 elevation: 5,
                 title: Text(
@@ -354,7 +352,7 @@ class _MenuState extends State<Menu> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => Menu()),
+                    MaterialPageRoute(builder: (context) => search()),
                   );
                 },
                 shape: RoundedRectangleBorder(
@@ -367,8 +365,7 @@ class _MenuState extends State<Menu> {
                       color: Colors.white,
                       letterSpacing: 1.5,
                       fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'OpenSans'),
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             ),

@@ -3,6 +3,7 @@ import 'package:flutter_application_photoris/action/user.dart';
 
 class Auth {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? user = FirebaseAuth.instance.currentUser;
 
   static register(
     String email,
@@ -19,6 +20,7 @@ class Auth {
           fullname: fullname,
           userid: userCredential.user!.uid,
           email: email,
+          password: password,
           phone: phone,
           photo: '',
           lineId: '-',
