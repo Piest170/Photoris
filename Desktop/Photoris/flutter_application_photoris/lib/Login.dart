@@ -1,0 +1,148 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_application_photoris/action/auth.dart';
+
+import 'Menu.dart';
+import 'Register.dart';
+
+class login extends StatelessWidget {
+  login({Key? key}) : super(key: key);
+
+  get child => null;
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(statusBarColor: Colors.white));
+    return Scaffold(
+        backgroundColor: Colors.black12,
+        body: SafeArea(
+            child: SingleChildScrollView(
+                child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 40),
+              child: Center(
+                child: Text(
+                  "Photoris",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            Center(
+              child: Text(
+                "Login  to  continue",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w300),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child:
+                  Image.asset("photo/Photoris01.png", height: 280, width: 280),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 50,
+                right: 50,
+              ),
+              child: TextFormField(
+                keyboardType: TextInputType.emailAddress,
+                controller: emailController,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'someone@email.com',
+                  labelText: 'ID Email',
+                  labelStyle: new TextStyle(fontSize: 20, color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(width: 2.0, color: Colors.white)),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(
+                bottom: 20,
+                left: 50,
+                right: 50,
+              ),
+              child: TextFormField(
+                keyboardType: TextInputType.visiblePassword,
+                controller: passwordController,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'password',
+                  labelText: 'Password',
+                  labelStyle: new TextStyle(fontSize: 20, color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(width: 2.0, color: Colors.white)),
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 25.0, horizontal: 45.0),
+              width: double.infinity,
+              child: RaisedButton(
+                elevation: 5.0,
+                padding: EdgeInsets.all(15.0),
+                onPressed: () async {
+                  await Auth.login(
+                      emailController.text, passwordController.text);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => theme()),
+                  );
+                },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                color: Colors.pinkAccent,
+                child: Text(
+                  'Login',
+                  style: TextStyle(
+                      color: Colors.white,
+                      letterSpacing: 1.5,
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'OpenSans'),
+                ),
+              ),
+            ),
+            Column(
+              children: [
+                TextButton(
+                    style: ButtonStyle(
+                      overlayColor: MaterialStateProperty.all(
+                        Colors.transparent,
+                      ),
+                      padding: MaterialStateProperty.all<EdgeInsets>(
+                          EdgeInsets.zero),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => register()),
+                      );
+                    },
+                    child: Text(
+                      "Create Account Now!",
+                      style: TextStyle(
+                          fontSize: 15, color: Theme.of(context).accentColor),
+                    )),
+              ],
+            ),
+          ],
+        ))));
+  }
+}
