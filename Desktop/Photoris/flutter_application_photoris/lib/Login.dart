@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:form_field_validator/form_field_validator.dart';
+
 import 'package:flutter_application_photoris/action/auth.dart';
 
 import 'Menu.dart';
@@ -55,6 +57,10 @@ class login extends StatelessWidget {
                 right: 50,
               ),
               child: TextFormField(
+                validator: MultiValidator([
+                  RequiredValidator(errorText: 'กรุณาป้อนอีเมล์'),
+                  EmailValidator(errorText: 'กรุณากรอกอีเมล์ให้ถูกต้อง')
+                ]),
                 keyboardType: TextInputType.emailAddress,
                 controller: emailController,
                 style: TextStyle(color: Colors.white),
@@ -77,6 +83,7 @@ class login extends StatelessWidget {
                 right: 50,
               ),
               child: TextFormField(
+                validator: RequiredValidator(errorText: 'กรุณาป้อนรหัสผ่าน'),
                 obscureText: true,
                 enableSuggestions: false,
                 autocorrect: false,

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_photoris/Upgrade_Account.dart';
+import 'package:flutter_application_photoris/action/user.dart';
 
 import 'editProfile.dart';
 
@@ -91,7 +92,6 @@ class Man extends StatelessWidget {
   Widget build(BuildContext context) {
     CollectionReference customer =
         FirebaseFirestore.instance.collection('user');
-
     return Container(
       width: double.infinity,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -108,7 +108,7 @@ class Man extends StatelessWidget {
         ),
         Center(
           child: Text(
-            "Alice James",
+            "Tosakan Saran",
             style: TextStyle(
               fontSize: 25.0,
               color: Colors.white,

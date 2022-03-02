@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_application_photoris/action/auth.dart';
+import 'package:form_field_validator/form_field_validator.dart';
 
 import 'Menu.dart';
 
@@ -48,6 +49,10 @@ class register extends StatelessWidget {
                 right: 50,
               ),
               child: TextFormField(
+                validator: MultiValidator([
+                  RequiredValidator(errorText: 'กรุณาป้อนอีเมล์'),
+                  EmailValidator(errorText: 'กรุณากรอกอีเมล์ให้ถูกต้อง')
+                ]),
                 keyboardType: TextInputType.emailAddress,
                 controller: emailController,
                 style: TextStyle(color: Colors.white),
@@ -70,6 +75,8 @@ class register extends StatelessWidget {
                 right: 50,
               ),
               child: TextFormField(
+                validator:
+                    RequiredValidator(errorText: 'กรุณาป้อนข้อมูลส่วนนี้'),
                 keyboardType: TextInputType.name,
                 controller: nameController,
                 style: TextStyle(color: Colors.white),
@@ -89,6 +96,8 @@ class register extends StatelessWidget {
                 right: 50,
               ),
               child: TextFormField(
+                validator:
+                    RequiredValidator(errorText: 'กรุณาป้อนข้อมูลส่วนนี้'),
                 keyboardType: TextInputType.text,
                 controller: phoneController,
                 inputFormatters: <TextInputFormatter>[
@@ -111,6 +120,8 @@ class register extends StatelessWidget {
                 right: 50,
               ),
               child: TextFormField(
+                validator:
+                    RequiredValidator(errorText: 'กรุณาป้อนข้อมูลส่วนนี้'),
                 obscureText: true,
                 enableSuggestions: false,
                 autocorrect: false,
@@ -133,6 +144,8 @@ class register extends StatelessWidget {
                 right: 50,
               ),
               child: TextFormField(
+                validator:
+                    RequiredValidator(errorText: 'กรุณาป้อนข้อมูลส่วนนี้'),
                 obscureText: true,
                 enableSuggestions: false,
                 autocorrect: false,
