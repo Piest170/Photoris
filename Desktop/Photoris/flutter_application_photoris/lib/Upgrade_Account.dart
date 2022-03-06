@@ -1,8 +1,18 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_switch/flutter_switch.dart';
 
-class Upgrade extends StatelessWidget {
+class Upgrade extends StatefulWidget {
   const Upgrade({Key? key}) : super(key: key);
+
+  @override
+  State<Upgrade> createState() => _UpgradeState();
+}
+
+class _UpgradeState extends State<Upgrade> {
+  bool status = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +38,28 @@ class Upgrade extends StatelessWidget {
                       fontWeight: FontWeight.bold),
                 ),
                 actions: [
+                  GestureDetector(
+                    child: FlutterSwitch(
+                      activeText: 'ว่าง',
+                      inactiveText: 'ไม่ว่าง',
+                      width: 90.0,
+                      height: 35.0,
+                      valueFontSize: 15.0,
+                      toggleSize: 30.0,
+                      value: status,
+                      borderRadius: 30.0,
+                      padding: 8.0,
+                      toggleColor: Color.fromRGBO(225, 225, 225, 1),
+                      activeColor: Color.fromRGBO(82, 215, 143, 1),
+                      inactiveColor: Color.fromRGBO(215, 90, 82, 1),
+                      showOnOff: true,
+                      onToggle: (bool value) {
+                        setState(() {
+                          status = value;
+                        });
+                      },
+                    ),
+                  ),
                   IconButton(
                     icon: Container(
                         margin: EdgeInsets.only(
@@ -39,13 +71,46 @@ class Upgrade extends StatelessWidget {
                         context: context,
                         builder: (BuildContext context) {
                           return Container(
-                            height: 200,
+                            height: 250,
                             color: Colors.white,
                             child: Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.min,
                                 children: <Widget>[
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(
+                                        width: 20,
+                                      ),
+                                      // GestureDetector(
+                                      //   child: FlutterSwitch(
+                                      //     width: 75.0,
+                                      //     height: 35.0,
+                                      //     valueFontSize: 15.0,
+                                      //     toggleSize: 30.0,
+                                      //     value: status,
+                                      //     borderRadius: 30.0,
+                                      //     padding: 8.0,
+                                      //     toggleColor:
+                                      //         Color.fromRGBO(225, 225, 225, 1),
+                                      //     activeColor:
+                                      //         Color.fromRGBO(82, 215, 143, 1),
+                                      //     inactiveColor:
+                                      //         Color.fromRGBO(215, 90, 82, 1),
+                                      //     showOnOff: true,
+                                      //     onToggle: (bool value) {
+                                      //       setState(() {
+                                      //         status = true;
+                                      //         print("ddd");
+                                      //       });
+                                      //     },
+                                      //   ),
+                                      // ),
+                                    ],
+                                  ),
                                   ListTile(
                                     leading: Icon(Icons.edit),
                                     title: Text('Edit'),
@@ -125,6 +190,23 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     return widgets[currentTabIndex];
   }
 
+  final costs = [
+    'ต่ำกว่า 1,000 บาท',
+    '1,000-5,000 บาท',
+    '5,000-10,000 บาท',
+    '10,000-15,000 บาท',
+    '15,000 บาทขึ้นไป'
+  ];
+  final locations = [
+    'ภาคเหนือ',
+    'ภาคใต้',
+    'ภาคกลาง',
+    'ภาคตะวันออกเฉียงเหนือ',
+    'ภาคตะวันออก'
+  ];
+  String? cost;
+  String? location;
+  bool status = false;
   @override
   Widget build(BuildContext context) {
     return NestedScrollView(
@@ -163,15 +245,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                 "Alice James",
                                 style: TextStyle(
                                   fontSize: 25.0,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              SizedBox(
-                                width: 10.0,
-                              ),
-                              GestureDetector(
-                                child: Icon(
-                                  Icons.calendar_today,
                                   color: Colors.white,
                                 ),
                               ),
@@ -215,22 +288,8 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      ' 100',
-                                      style: GoogleFonts.mitr(
-                                          textStyle: TextStyle(
-                                              color: Colors.white,
-                                              letterSpacing: 1.5,
-                                              fontSize: 18.0,
-                                              fontWeight: FontWeight.bold)),
-                                    ),
-                                    Text(
-                                      ' follow',
-                                      style: GoogleFonts.mitr(
-                                          textStyle: TextStyle(
-                                              color: Colors.white,
-                                              letterSpacing: 1.5,
-                                              fontSize: 18.0,
-                                              fontWeight: FontWeight.bold)),
+                                      ' 100 follow',
+                                      style: TextStyle(color: Colors.white),
                                     ),
                                   ],
                                 ),
@@ -396,25 +455,85 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                 SizedBox(
                                   width: 25.0,
                                 ),
+                                Container(
+                                  width: 200,
+                                  height: 40,
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      hint: Text(
+                                        'สถานที่',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      value: location,
+                                      iconSize: 20,
+                                      elevation: 4,
+                                      isExpanded: true,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                      ),
+                                      icon: Icon(Icons.arrow_drop_down,
+                                          color: Colors.white),
+                                      items: locations
+                                          .map(buildLocationItem)
+                                          .toList(),
+                                      onChanged: (value) =>
+                                          setState(() => this.location = value),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 50, top: 10),
+                            child: Row(
+                              children: [
                                 Text(
-                                  "ภาคเหนือ",
+                                  "เรตราคา:",
                                   style: TextStyle(
                                     fontSize: 20.0,
                                     color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 35.0,
+                                ),
+                                Container(
+                                  width: 200,
+                                  height: 40,
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      hint: Text(
+                                        'ใส่งบประมาณที่ต้องการ',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      value: cost,
+                                      iconSize: 20,
+                                      elevation: 4,
+                                      isExpanded: true,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                      ),
+                                      icon: Icon(Icons.arrow_drop_down,
+                                          color: Colors.white),
+                                      items: costs.map(buildCostItem).toList(),
+                                      onChanged: (value) =>
+                                          setState(() => this.cost = value),
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
                           SizedBox(
-                            height: 25.0,
-                          ),
+                            height: 15.0,
+                          )
                         ]),
                   ),
                 ],
               ),
             ),
-            expandedHeight: 600.0,
+            expandedHeight: 650.0,
             bottom: TabBar(
               controller: _tabController,
               indicatorColor: Colors.pink,
@@ -455,7 +574,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(21.0),
+                    padding: const EdgeInsets.all(20.0),
                     child: GridView.count(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
@@ -630,3 +749,10 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     );
   }
 }
+
+DropdownMenuItem<String> buildCostItem(String item) => DropdownMenuItem(
+    value: item,
+    child: Text(item, style: TextStyle(fontWeight: FontWeight.bold)));
+DropdownMenuItem<String> buildLocationItem(String item) => DropdownMenuItem(
+    value: item,
+    child: Text(item, style: TextStyle(fontWeight: FontWeight.bold)));

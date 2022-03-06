@@ -106,12 +106,34 @@ class login extends StatelessWidget {
                 elevation: 5.0,
                 padding: EdgeInsets.all(15.0),
                 onPressed: () async {
-                  await Auth.login(
+                  final result = await Auth.login(
                       emailController.text, passwordController.text);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => theme()),
-                  );
+                  if (result == null) {
+                    return showDialog<void>(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                              title: const Text('Error!'),
+                              content: const Text(
+                                  'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, 'Cancel'),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, 'OK'),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ));
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => theme()),
+                    );
+                  }
+                  print(result);
                 },
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30.0),
