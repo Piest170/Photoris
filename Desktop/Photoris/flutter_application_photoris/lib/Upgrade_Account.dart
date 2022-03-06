@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_photoris/setting.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 
@@ -67,71 +68,7 @@ class _UpgradeState extends State<Upgrade> {
                         ),
                         child: Icon(Icons.menu, size: 30)),
                     onPressed: () {
-                      showModalBottomSheet<void>(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return Container(
-                            height: 250,
-                            color: Colors.white,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        width: 20,
-                                      ),
-                                      // GestureDetector(
-                                      //   child: FlutterSwitch(
-                                      //     width: 75.0,
-                                      //     height: 35.0,
-                                      //     valueFontSize: 15.0,
-                                      //     toggleSize: 30.0,
-                                      //     value: status,
-                                      //     borderRadius: 30.0,
-                                      //     padding: 8.0,
-                                      //     toggleColor:
-                                      //         Color.fromRGBO(225, 225, 225, 1),
-                                      //     activeColor:
-                                      //         Color.fromRGBO(82, 215, 143, 1),
-                                      //     inactiveColor:
-                                      //         Color.fromRGBO(215, 90, 82, 1),
-                                      //     showOnOff: true,
-                                      //     onToggle: (bool value) {
-                                      //       setState(() {
-                                      //         status = true;
-                                      //         print("ddd");
-                                      //       });
-                                      //     },
-                                      //   ),
-                                      // ),
-                                    ],
-                                  ),
-                                  ListTile(
-                                    leading: Icon(Icons.edit),
-                                    title: Text('Edit'),
-                                    onTap: () => {},
-                                  ),
-                                  ListTile(
-                                    leading: Icon(Icons.save_alt_rounded),
-                                    title: Text('Save'),
-                                    onTap: () => {},
-                                  ),
-                                  ListTile(
-                                    leading: Icon(Icons.delete_forever),
-                                    title: Text('Delete Account'),
-                                    onTap: () => {},
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      );
+                      setting();
                     },
                   ),
                 ],
@@ -147,7 +84,7 @@ class _UpgradeState extends State<Upgrade> {
 }
 
 class Body extends StatefulWidget {
-  //  Body({ Key? key }) : super(key: key);
+  Body({Key? key}) : super(key: key);
   @override
   State<Body> createState() => _BodyState();
 }

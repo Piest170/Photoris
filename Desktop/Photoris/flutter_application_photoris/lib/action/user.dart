@@ -40,4 +40,18 @@ class UserService {
       "detail": user.detail
     });
   }
+
+  // updateUser(UserModel user) async {
+  //   await _firestore.collection("User").doc(user.userid).update({
+  //     "userid": user.userid,
+  //     "fullname": user.fullname,
+  //     "email": user.email,
+  //     "password": user.password,
+  //     "photo": user.photo,
+  //     "phone": user.phone,
+  //     "lineId": user.lineId,
+  //     "website": user.website,
+  //     "detail": user.detail
+  //   });
+  // }
 }

@@ -5,10 +5,15 @@ import 'package:form_field_validator/form_field_validator.dart';
 
 import 'Menu.dart';
 
-class register extends StatelessWidget {
+class register extends StatefulWidget {
   register({Key? key}) : super(key: key);
 
-  get child => null;
+  @override
+  State<register> createState() => _registerState();
+}
+
+class _registerState extends State<register> {
+  final _formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
@@ -25,174 +30,214 @@ class register extends StatelessWidget {
         ),
         backgroundColor: Colors.black12,
         body: SafeArea(
-            child: SingleChildScrollView(
-                child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 17),
-              child: Center(
-                child: Text(
-                  "Create Account",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold),
+            child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+              child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 17),
+                child: Center(
+                  child: Text(
+                    "Create Account",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(
-              height: 50,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 50,
-                right: 50,
+              SizedBox(
+                height: 50,
               ),
-              child: TextFormField(
-                validator: MultiValidator([
-                  RequiredValidator(errorText: 'กรุณาป้อนอีเมล์'),
-                  EmailValidator(errorText: 'กรุณากรอกอีเมล์ให้ถูกต้อง')
-                ]),
-                keyboardType: TextInputType.emailAddress,
-                controller: emailController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'someone@email.com',
-                  labelText: 'ID Email',
-                  labelStyle: new TextStyle(fontSize: 20, color: Colors.white),
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(width: 2.0, color: Colors.white)),
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 50,
+                  right: 50,
+                ),
+                child: TextFormField(
+                  validator: (String? email) {
+                    RequiredValidator(errorText: 'กรุณาป้อนข้อมูลส่วนนี้');
+                    if (!email!.contains('@')) {
+                      return 'กรุณากรอกอีเมล์ให้ถูกต้อง';
+                    }
+                  },
+                  keyboardType: TextInputType.emailAddress,
+                  controller: emailController,
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'someone@email.com',
+                    labelText: 'ID Email',
+                    labelStyle:
+                        new TextStyle(fontSize: 20, color: Colors.white),
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide:
+                            BorderSide(width: 2.0, color: Colors.white)),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(
-              height: 5,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                bottom: 20,
-                left: 50,
-                right: 50,
+              SizedBox(
+                height: 5,
               ),
-              child: TextFormField(
-                validator:
-                    RequiredValidator(errorText: 'กรุณาป้อนข้อมูลส่วนนี้'),
-                keyboardType: TextInputType.name,
-                controller: nameController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Name',
-                  labelText: 'Fullname',
-                  labelStyle: new TextStyle(fontSize: 20, color: Colors.white),
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(width: 2.0, color: Colors.white)),
+              Padding(
+                padding: const EdgeInsets.only(
+                  bottom: 20,
+                  left: 50,
+                  right: 50,
+                ),
+                child: TextFormField(
+                  validator:
+                      RequiredValidator(errorText: 'กรุณาป้อนข้อมูลส่วนนี้'),
+                  keyboardType: TextInputType.name,
+                  controller: nameController,
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Name',
+                    labelText: 'Fullname',
+                    labelStyle:
+                        new TextStyle(fontSize: 20, color: Colors.white),
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide:
+                            BorderSide(width: 2.0, color: Colors.white)),
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                bottom: 20,
-                left: 50,
-                right: 50,
-              ),
-              child: TextFormField(
-                validator:
-                    RequiredValidator(errorText: 'กรุณาป้อนข้อมูลส่วนนี้'),
-                keyboardType: TextInputType.text,
-                controller: phoneController,
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly
-                ],
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Phone Number',
-                  labelText: 'Phone Number',
-                  labelStyle: new TextStyle(fontSize: 20, color: Colors.white),
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(width: 2.0, color: Colors.white)),
+              Padding(
+                padding: const EdgeInsets.only(
+                  bottom: 20,
+                  left: 50,
+                  right: 50,
+                ),
+                child: TextFormField(
+                  validator:
+                      RequiredValidator(errorText: 'กรุณาป้อนข้อมูลส่วนนี้'),
+                  keyboardType: TextInputType.text,
+                  controller: phoneController,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Phone Number',
+                    labelText: 'Phone Number',
+                    labelStyle:
+                        new TextStyle(fontSize: 20, color: Colors.white),
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide:
+                            BorderSide(width: 2.0, color: Colors.white)),
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                bottom: 20,
-                left: 50,
-                right: 50,
-              ),
-              child: TextFormField(
-                validator:
-                    RequiredValidator(errorText: 'กรุณาป้อนข้อมูลส่วนนี้'),
-                obscureText: true,
-                enableSuggestions: false,
-                autocorrect: false,
-                keyboardType: TextInputType.visiblePassword,
-                controller: passwordController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'password',
-                  labelText: 'Password',
-                  labelStyle: new TextStyle(fontSize: 20, color: Colors.white),
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(width: 2.0, color: Colors.white)),
+              Padding(
+                padding: const EdgeInsets.only(
+                  bottom: 20,
+                  left: 50,
+                  right: 50,
+                ),
+                child: TextFormField(
+                  validator: (String? password) {
+                    if (password!.length < 8) {
+                      return 'กรุณากรอกมากกว่า 8 ตัวอักษร';
+                    }
+                  },
+                  obscureText: true,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  keyboardType: TextInputType.visiblePassword,
+                  controller: passwordController,
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'password',
+                    labelText: 'Password',
+                    labelStyle:
+                        new TextStyle(fontSize: 20, color: Colors.white),
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide:
+                            BorderSide(width: 2.0, color: Colors.white)),
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                bottom: 20,
-                left: 50,
-                right: 50,
-              ),
-              child: TextFormField(
-                validator:
-                    RequiredValidator(errorText: 'กรุณาป้อนข้อมูลส่วนนี้'),
-                obscureText: true,
-                enableSuggestions: false,
-                autocorrect: false,
-                keyboardType: TextInputType.visiblePassword,
-                controller: confirmpasswordController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Confirm password',
-                  labelText: 'Confirm Password',
-                  labelStyle: new TextStyle(fontSize: 20, color: Colors.white),
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(width: 2.0, color: Colors.white)),
+              Padding(
+                padding: const EdgeInsets.only(
+                  bottom: 20,
+                  left: 50,
+                  right: 50,
+                ),
+                child: TextFormField(
+                  validator: (String? password) {
+                    if (password!.length < 8) {
+                      return 'กรุณากรอกมากกว่า 8 ตัวอักษร';
+                    }
+                  },
+                  obscureText: true,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  keyboardType: TextInputType.visiblePassword,
+                  controller: confirmpasswordController,
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Confirm password',
+                    labelText: 'Confirm Password',
+                    labelStyle:
+                        new TextStyle(fontSize: 20, color: Colors.white),
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide:
+                            BorderSide(width: 2.0, color: Colors.white)),
+                  ),
                 ),
               ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 25.0, horizontal: 45.0),
-              width: double.infinity,
-              child: RaisedButton(
-                elevation: 5.0,
-                padding: EdgeInsets.all(15.0),
-                onPressed: () async {
-                  await Auth.register(
-                      emailController.text,
-                      passwordController.text,
-                      nameController.text,
-                      phoneController.text);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => theme()),
-                  );
-                },
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                color: Colors.pinkAccent,
-                child: Text(
-                  'Create',
-                  style: TextStyle(
-                      color: Colors.white,
-                      letterSpacing: 1.5,
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold),
+              Container(
+                padding: EdgeInsets.symmetric(vertical: 25.0, horizontal: 45.0),
+                width: double.infinity,
+                child: RaisedButton(
+                  elevation: 5.0,
+                  padding: EdgeInsets.all(15.0),
+                  onPressed: () async {
+                    if (passwordController.text !=
+                        confirmpasswordController.text) {
+                      return showDialog<void>(
+                          context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                                title: const Text('Error Password!'),
+                                content: const Text('กรอกรหัสผ่านไม่ถูกต้อง'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, 'OK'),
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              ));
+                    }
+                    await Auth.register(
+                        emailController.text,
+                        passwordController.text,
+                        nameController.text,
+                        phoneController.text);
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => theme()),
+                      );
+                    }
+                  },
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  color: Colors.pinkAccent,
+                  child: Text(
+                    'Create',
+                    style: TextStyle(
+                        color: Colors.white,
+                        letterSpacing: 1.5,
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ))));
+            ],
+          )),
+        )));
   }
 }

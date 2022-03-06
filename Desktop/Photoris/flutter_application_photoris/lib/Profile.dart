@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_photoris/Upgrade_Account.dart';
+import 'package:flutter_application_photoris/setting.dart';
 
 class Profile extends StatelessWidget {
   Profile({Key? key}) : super(key: key);
@@ -38,37 +39,10 @@ class Profile extends StatelessWidget {
                         child: Icon(Icons.menu, size: 30)),
                     onPressed: () {
                       showModalBottomSheet<void>(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return Container(
-                            height: 200,
-                            color: Colors.white,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  ListTile(
-                                    leading: Icon(Icons.edit),
-                                    title: Text('Edit'),
-                                    onTap: () => {},
-                                  ),
-                                  ListTile(
-                                    leading: Icon(Icons.save_alt_rounded),
-                                    title: Text('Save'),
-                                    onTap: () => {},
-                                  ),
-                                  ListTile(
-                                    leading: Icon(Icons.delete_forever),
-                                    title: Text('Delete Account'),
-                                    onTap: () => {},
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      );
+                          context: context,
+                          builder: (BuildContext context) {
+                            return setting();
+                          });
                     },
                   ),
                 ],
