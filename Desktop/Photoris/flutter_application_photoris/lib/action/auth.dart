@@ -17,15 +17,18 @@ class Auth {
           .createUserWithEmailAndPassword(email: email, password: password);
 
       await UserService().createUser(UserModel(
-          fullname: fullname,
-          userid: userCredential.user!.uid,
-          email: email,
-          password: password,
-          phone: phone,
-          photo: '',
-          lineId: '-',
-          website: '-',
-          detail: '-'));
+        fullname: fullname,
+        userid: userCredential.user!.uid,
+        email: email,
+        password: password,
+        phone: phone,
+        photo:
+            'https://firebasestorage.googleapis.com/v0/b/photoris-6b7cc.appspot.com/o/avatar.png?alt=media&token=d7744d6e-143e-46f8-ba35-1871ea5773f5',
+        lineId: '-',
+        website: '-',
+        detail: '-',
+        status: "user",
+      ));
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         print('The password provided is too weak.');

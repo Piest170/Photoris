@@ -1,26 +1,59 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
-  final String userid;
-  final String email;
-  final String password;
-  final String fullname;
-  final String photo;
-  final String phone;
-  final String lineId;
-  final String website;
-  final String detail;
+  late String? userid;
+  late String? email;
+  late String? password;
+  late String? fullname;
+  late String? photo;
+  late String? phone;
+  late String? lineId;
+  late String? website;
+  late String? detail;
+  late String? status;
 
-  UserModel(
-      {required this.userid,
-      required this.email,
-      required this.password,
-      required this.fullname,
-      required this.photo,
-      required this.phone,
-      required this.lineId,
-      required this.website,
-      required this.detail});
+  UserModel({
+    this.userid,
+    this.email,
+    this.password,
+    this.fullname,
+    this.photo,
+    this.phone,
+    this.lineId,
+    this.website,
+    this.detail,
+    this.status,
+  });
+
+  factory UserModel.fromJSON(dynamic json) {
+    return UserModel(
+      userid: json["userid"],
+      email: json["email"],
+      password: json["password"],
+      fullname: json["fullname"],
+      photo: json["photo"],
+      phone: json["phone"],
+      lineId: json["lineId"],
+      website: json["website"],
+      detail: json["detial"],
+      status: json["status"],
+    );
+  }
+
+  toJSON() {
+    return {
+      "userid": this.userid,
+      "email": this.email,
+      "password": this.password,
+      "fullname": this.fullname,
+      "photo": this.photo,
+      "phone": this.phone,
+      "lineId": this.lineId,
+      "website": this.website,
+      "detail": this.detail,
+      "status": this.status,
+    };
+  }
 }
 
 class UserService {
