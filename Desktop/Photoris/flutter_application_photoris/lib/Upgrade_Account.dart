@@ -1,14 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_photoris/action/comment.dart';
+import 'package:flutter_application_photoris/action/like.dart';
 import 'package:flutter_application_photoris/action/photographer.dart';
 import 'package:flutter_application_photoris/action/user.dart';
 import 'package:flutter_application_photoris/setting.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_switch/flutter_switch.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+
+import 'Profile.dart';
 
 class Upgrade extends StatefulWidget {
-  const Upgrade({Key? key}) : super(key: key);
+  final String userId;
+  final bool viewOnly;
+  const Upgrade({
+    Key? key,
+    this.viewOnly = true,
+    required this.userId,
+  }) : super(key: key);
 
   @override
   State<Upgrade> createState() => _UpgradeState();
@@ -19,10 +32,9 @@ class _UpgradeState extends State<Upgrade> {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
     final photographer = FirebaseFirestore.instance
         .collection('Photographer')
-        .where("uid", isEqualTo: user!.uid)
+        .where("uid", isEqualTo: widget.userId)
         .snapshots();
 
     final key = GlobalKey<_BodyState>();
@@ -82,6 +94,7 @@ class _UpgradeState extends State<Upgrade> {
                             inactiveColor: Color.fromRGBO(215, 90, 82, 1),
                             showOnOff: true,
                             onToggle: (bool value) {
+                              if (widget.viewOnly) return;
                               setState(() {
                                 FirebaseFirestore.instance
                                     .collection("Photographer")
@@ -91,29 +104,68 @@ class _UpgradeState extends State<Upgrade> {
                             },
                           ),
                         ),
-                        IconButton(
-                          icon: Container(
-                              margin: EdgeInsets.only(
-                                right: 50,
+                        widget.viewOnly
+                            ? SizedBox()
+                            : IconButton(
+                                icon: Container(
+                                    margin: EdgeInsets.only(
+                                      right: 50,
+                                    ),
+                                    child: Icon(Icons.menu, size: 30)),
+                                onPressed: () {
+                                  showModalBottomSheet<void>(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return photographersetting(
+                                          onCancel: () async {
+                                            final auth = FirebaseAuth
+                                                .instance.currentUser!;
+
+                                            // get photographer id
+                                            final _photographer =
+                                                await FirebaseFirestore.instance
+                                                    .collection("Photographer")
+                                                    .where(auth.uid)
+                                                    .get();
+
+                                            // update disabled
+                                            await FirebaseFirestore.instance
+                                                .collection("Photographer")
+                                                .doc(
+                                                    _photographer.docs.first.id)
+                                                .update({
+                                              "disabled": true,
+                                              "status": false,
+                                            });
+
+                                            // update status
+                                            await FirebaseFirestore.instance
+                                                .collection("User")
+                                                .doc(auth.uid)
+                                                .update({"status": "user"});
+
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => Profile(),
+                                              ),
+                                            );
+                                          },
+                                          onEdit: () {
+                                            setState(() {
+                                              isEdit = true;
+                                            });
+                                          },
+                                          onSave: () {
+                                            key.currentState!.save();
+                                            setState(() {
+                                              isEdit = false;
+                                            });
+                                          },
+                                        );
+                                      });
+                                },
                               ),
-                              child: Icon(Icons.menu, size: 30)),
-                          onPressed: () {
-                            showModalBottomSheet<void>(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return photographersetting(onEdit: (_) {
-                                    setState(() {
-                                      isEdit = true;
-                                    });
-                                  }, onSave: () {
-                                    key.currentState!.save();
-                                    setState(() {
-                                      isEdit = false;
-                                    });
-                                  });
-                                });
-                          },
-                        ),
                       ],
                     ),
                   ),
@@ -133,6 +185,7 @@ class _UpgradeState extends State<Upgrade> {
                     user: _user,
                     photographer: photographer,
                     key: key,
+                    viewOnly: widget.viewOnly,
                   ));
                 }),
             backgroundColor: Colors.black12,
@@ -147,15 +200,18 @@ class Body extends StatefulWidget {
     required this.isEdit,
     required this.user,
     required this.photographer,
+    this.viewOnly = true,
   }) : super(key: key);
   final bool isEdit;
   final UserModel user;
   final PhotographerModel photographer;
+  final bool viewOnly;
   @override
   State<Body> createState() => _BodyState();
 }
 
 class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
+  final auth = FirebaseAuth.instance.currentUser!;
   late TabController _tabController;
   String? cate;
   final nameController = TextEditingController();
@@ -208,9 +264,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     websiteController.text = widget.user.website!;
     lineIdController.text = widget.user.lineId!;
 
-    cost = widget.photographer.cost;
-    location = widget.photographer.location;
-    category = widget.photographer.category;
+    cost = widget.photographer.cost ?? "";
+    location = widget.photographer.location ?? "";
+    category = widget.photographer.category ?? "";
 
     _tabController = TabController(vsync: this, length: 2);
     _tabController.addListener(() {
@@ -259,6 +315,27 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   bool status = false;
   String? category;
 
+  follow() async {
+    if (widget.photographer.uid == auth.uid) return;
+
+    await FirebaseFirestore.instance
+        .collection("Follow")
+        .add({"uid": auth.uid, "photographerId": widget.photographer.id});
+  }
+
+  unfollow() async {
+    final _follow = await FirebaseFirestore.instance
+        .collection("Follow")
+        .where("photographerId", isEqualTo: widget.photographer.id)
+        .where("uid", isEqualTo: auth.uid)
+        .get();
+
+    await FirebaseFirestore.instance
+        .collection("Follow")
+        .doc(_follow.docs.first.id)
+        .delete();
+  }
+
   @override
   Widget build(BuildContext context) {
     return NestedScrollView(
@@ -282,6 +359,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                       children: [
                         Center(
                           child: CircleAvatar(
+                            backgroundColor: Colors.black,
                             backgroundImage:
                                 NetworkImage("${widget.user.photo}"),
                             radius: 60.0,
@@ -322,30 +400,72 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                             padding: EdgeInsets.symmetric(
                                 vertical: 0.0, horizontal: 45.0),
                             width: 250,
-                            child: RaisedButton(
-                              elevation: 5.0,
-                              padding: EdgeInsets.all(10.0),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => Upgrade()),
-                                );
-                              },
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              color: Colors.pinkAccent,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    ' 100 follow',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            child: StreamBuilder<QuerySnapshot>(
+                                stream: FirebaseFirestore.instance
+                                    .collection("Follow")
+                                    .where("photographerId",
+                                        isEqualTo: widget.photographer.id)
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return SizedBox();
+                                  }
+
+                                  int _followCounts = 0;
+                                  bool _isUserFollowed = false;
+
+                                  snapshot.data!.docs.forEach((e) {
+                                    _followCounts++;
+                                    if ((e.data() as dynamic)["uid"] ==
+                                        auth.uid) {
+                                      _isUserFollowed = true;
+                                    }
+                                  });
+
+                                  return _isUserFollowed
+                                      ? RaisedButton(
+                                          elevation: 5.0,
+                                          padding: EdgeInsets.all(10.0),
+                                          onPressed: unfollow,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                          ),
+                                          color: Colors.white,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Image.asset(
+                                                "photo/check1.png",
+                                                height: 20,
+                                              )
+                                            ],
+                                          ),
+                                        )
+                                      : RaisedButton(
+                                          elevation: 5.0,
+                                          padding: EdgeInsets.all(10.0),
+                                          onPressed: follow,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                          ),
+                                          color: Colors.pinkAccent,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                '$_followCounts follow',
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                }),
                           ),
                         ),
                         SizedBox(
@@ -461,11 +581,15 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                               SizedBox(
                                 width: 55.0,
                               ),
-                              Text(
-                                "${widget.user.email}",
-                                style: TextStyle(
-                                  fontSize: 20.0,
-                                  color: Colors.white,
+                              Container(
+                                width: 200,
+                                child: Text(
+                                  "${widget.user.email}",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 20.0,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ],
@@ -606,8 +730,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                       ),
                                     )
                                   : Text(
-                                      "$cost",
+                                      "$location",
                                       style: TextStyle(
+                                        fontSize: 20.0,
                                         color: Colors.white,
                                       ),
                                     ),
@@ -656,8 +781,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                       ),
                                     )
                                   : Text(
-                                      "$location",
+                                      "$cost",
                                       style: TextStyle(
+                                        fontSize: 20.0,
                                         color: Colors.white,
                                       ),
                                     ),
@@ -707,8 +833,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                       ),
                                     )
                                   : Text(
-                                      "${widget.photographer.category}",
+                                      "${category}",
                                       style: TextStyle(
+                                        fontSize: 20.0,
                                         color: Colors.white,
                                       ),
                                     ),
@@ -763,128 +890,44 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                       ),
                     ),
                   ),
-                  Images(),
+                  Images(
+                      viewOnly: widget.viewOnly,
+                      urls: widget.photographer.url!,
+                      onUpload: (url) {
+                        final urls = widget.photographer.url ?? [];
+                        urls.add(url);
+                        FirebaseFirestore.instance
+                            .collection("Photographer")
+                            .doc(widget.photographer.id)
+                            .update({"url": urls});
+                      }),
                 ],
               ),
             ),
-            Container(
-              color: Colors.white,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: Center(
-                      child: Text(
-                        "ความคิดเห็นจากลูกค้า",
-                        style: GoogleFonts.prompt(
-                          textStyle: TextStyle(
-                              fontWeight: FontWeight.normal, fontSize: 20),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          "photo/Group10.png",
-                          width: 30,
-                          height: 30,
-                        ),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Text("10k"),
-                        SizedBox(
-                          width: 80,
-                        ),
-                        Image.asset(
-                          "photo/Group11.png",
-                          width: 30,
-                          height: 30,
-                        ),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Text("10k"),
-                        SizedBox(
-                          height: 15,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            margin: EdgeInsets.all(10),
-                            child: TextField(
-                              decoration: InputDecoration(
-                                  contentPadding:
-                                      EdgeInsets.symmetric(horizontal: 10),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide:
-                                          BorderSide(color: Colors.grey)),
-                                  hintText: "comment"),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Image.asset(
-                          "photo/send.png",
-                          width: 30,
-                          height: 30,
-                        ),
-                      ],
-                    ),
-                  ),
-                  for (int i = 0; i < 10; i++)
-                    Container(
-                      margin:
-                          EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundImage: NetworkImage(
-                              "https://www.rd.com/wp-content/uploads/2017/09/01-shutterstock_476340928-Irina-Bg.jpg",
-                            ),
-                            radius: 25.0,
-                          ),
-                          SizedBox(
-                            width: 15,
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Tosakan saran",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              SizedBox(
-                                height: 5,
-                              ),
-                              Text("ช่างภาพเหี้ยเกินนน!!"),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
+            StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection("Comment")
+                    .where("photographerId", isEqualTo: widget.photographer.id)
+                    .orderBy("createdAt", descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return SizedBox();
+                  }
+
+                  final List<CommentModel> _comments = [];
+
+                  snapshot.data!.docs.forEach((e) {
+                    final _c = CommentModel.fromJSON(e.data());
+                    _c.id = e.id;
+                    _comments.add(_c);
+                  });
+
+                  return Comment(
+                    photographer: widget.photographer,
+                    comments: _comments,
+                  );
+                }),
           ]),
         ],
       ),
@@ -900,13 +943,39 @@ DropdownMenuItem<String> buildLocationItem(String item) => DropdownMenuItem(
     child: Text(item, style: TextStyle(fontWeight: FontWeight.bold)));
 
 class Images extends StatefulWidget {
-  const Images({Key? key}) : super(key: key);
+  final Function(String url) onUpload;
+  final bool viewOnly;
+  final List<String> urls;
+  const Images({
+    Key? key,
+    required this.urls,
+    required this.onUpload,
+    this.viewOnly = true,
+  }) : super(key: key);
 
   @override
   State<Images> createState() => _ImagesState();
 }
 
 class _ImagesState extends State<Images> {
+  final ImagePicker _picker = ImagePicker();
+
+  uploadImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      final ref = firebase_storage.FirebaseStorage.instance
+          .ref('uploads/${image.name}');
+
+      final task = await ref.putData(
+        await image.readAsBytes(),
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
+
+      final url = await task.ref.getDownloadURL();
+      widget.onUpload(url);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -919,29 +988,14 @@ class _ImagesState extends State<Images> {
           mainAxisSpacing: 20,
           childAspectRatio: 0.8,
           children: [
-            GestureDetector(
-              onTap: () {},
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey),
-                ),
-                child: Center(
-                  child: Icon(Icons.add, size: 60),
-                ),
-              ),
-            ),
-            for (int i = 0; i < 10; i++)
+            for (var u in widget.urls)
               Container(
                 child: Stack(
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(20),
-                      child: Image.asset(
-                        "photo/cat.jpeg",
+                      child: Image.network(
+                        "$u",
                         height: 200,
                         width: 160,
                         fit: BoxFit.cover,
@@ -950,7 +1004,269 @@ class _ImagesState extends State<Images> {
                   ],
                 ),
               ),
+            widget.viewOnly
+                ? SizedBox()
+                : GestureDetector(
+                    onTap: uploadImage,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                      child: Center(
+                        child: Icon(Icons.add, size: 60),
+                      ),
+                    ),
+                  ),
           ]),
+    );
+  }
+}
+
+class Comment extends StatefulWidget {
+  final PhotographerModel photographer;
+  final List<CommentModel> comments;
+  const Comment({
+    Key? key,
+    required this.photographer,
+    required this.comments,
+  }) : super(key: key);
+
+  @override
+  State<Comment> createState() => _CommentState();
+}
+
+class _CommentState extends State<Comment> {
+  final auth = FirebaseAuth.instance.currentUser!;
+  final textController = TextEditingController();
+
+  postComment() async {
+    final user =
+        await FirebaseFirestore.instance.collection("User").doc(auth.uid).get();
+
+    await FirebaseFirestore.instance.collection("Comment").add({
+      "uid": auth.uid,
+      "User": user.reference,
+      "photographerId": widget.photographer.id,
+      "text": textController.text,
+      "createdAt": DateTime.now(),
+    });
+
+    textController.clear();
+  }
+
+  toggleLike(String type) async {
+    // cannot like yourself
+    if (widget.photographer.uid == auth.uid) return;
+
+    final isUserLiked = await FirebaseFirestore.instance
+        .collection("Like")
+        .where("uid", isEqualTo: auth.uid)
+        .where("photographerId", isEqualTo: widget.photographer.id)
+        .get();
+
+    // not exist
+    if (isUserLiked.docs.isEmpty) {
+      await FirebaseFirestore.instance.collection("Like").add({
+        "uid": auth.uid,
+        "photographerId": widget.photographer.id,
+        "type": type,
+      });
+    } else {
+      final _like = LikeModel.fromJSON(isUserLiked.docs.first.data());
+      _like.id = isUserLiked.docs.first.id;
+
+      // delete type
+      if (_like.type == type) {
+        await FirebaseFirestore.instance
+            .collection("Like")
+            .doc(_like.id)
+            .delete();
+      }
+      // update type
+      else {
+        await FirebaseFirestore.instance
+            .collection("Like")
+            .doc(isUserLiked.docs.first.id)
+            .update({
+          "type": type,
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: Center(
+              child: Text(
+                "ความคิดเห็นจากลูกค้า",
+                style: GoogleFonts.prompt(
+                  textStyle:
+                      TextStyle(fontWeight: FontWeight.normal, fontSize: 20),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection("Like")
+                  .where("photographerId", isEqualTo: widget.photographer.id)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return SizedBox();
+                }
+
+                // final List<LikeModel> _likes = [];
+
+                int _likeCounts = 0;
+                int _dislikeCounts = 0;
+
+                LikeModel _userLike = LikeModel();
+
+                snapshot.data!.docs.forEach((e) {
+                  final _l = LikeModel.fromJSON(e.data());
+                  if (_l.uid == auth.uid) {
+                    _userLike = _l;
+                  }
+                  if (_l.type == "like") {
+                    _likeCounts++;
+                  } else {
+                    _dislikeCounts++;
+                  }
+                });
+
+                return Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          toggleLike("like");
+                        },
+                        child: Image.asset(
+                          "photo/Group10.png",
+                          width: _userLike.type == "like" ? 40 : 30,
+                          height: _userLike.type == "like" ? 40 : 30,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text("$_likeCounts"),
+                      SizedBox(
+                        width: 80,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          toggleLike("dislike");
+                        },
+                        child: Image.asset(
+                          "photo/Group11.png",
+                          width: _userLike.type == "dislike" ? 40 : 30,
+                          height: _userLike.type == "dislike" ? 40 : 30,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text("$_dislikeCounts"),
+                      SizedBox(
+                        height: 15,
+                      ),
+                    ],
+                  ),
+                );
+              }),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.all(10),
+                    child: TextField(
+                      controller: textController,
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20.0),
+                            borderSide: BorderSide(color: Colors.grey)),
+                        hintText: "comment",
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                GestureDetector(
+                  onTap: postComment,
+                  child: Image.asset(
+                    "photo/send.png",
+                    width: 30,
+                    height: 30,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          for (var c in widget.comments)
+            FutureBuilder<DocumentSnapshot>(
+                future: c.user!.get(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return SizedBox();
+                  }
+                  final _user = UserModel.fromJSON(snapshot.data!.data());
+                  return Container(
+                    margin: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(
+                            "${_user.photo}",
+                          ),
+                          radius: 25.0,
+                        ),
+                        SizedBox(
+                          width: 15,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "${_user.fullname}",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 18,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 5,
+                            ),
+                            Text("${c.text}"),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+        ],
+      ),
     );
   }
 }

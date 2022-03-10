@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:form_field_validator/form_field_validator.dart';
@@ -18,6 +19,20 @@ class _loginState extends State<login> {
   final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      final auth = FirebaseAuth.instance.currentUser;
+      if (auth != null) {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => theme()));
+      }
+    });
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +148,7 @@ class _loginState extends State<login> {
                                   ],
                                 ));
                       } else {
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => theme()),
                         );

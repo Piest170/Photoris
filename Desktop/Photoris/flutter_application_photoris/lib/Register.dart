@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_application_photoris/action/auth.dart';
@@ -209,17 +210,39 @@ class _registerState extends State<register> {
                                 ],
                               ));
                     }
-                    await Auth.register(
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+                      final res = await Auth.register(
                         emailController.text,
                         passwordController.text,
                         nameController.text,
-                        phoneController.text);
-                    if (_formKey.currentState!.validate()) {
-                      _formKey.currentState!.save();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => theme()),
+                        phoneController.text,
                       );
+
+                      if (res) {
+                        if (FirebaseAuth.instance.currentUser == null) {
+                          await Auth.login(
+                              emailController.text, passwordController.text);
+                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => theme()),
+                        );
+                      } else {
+                        showDialog<void>(
+                          context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                            title: const Text('Error!'),
+                            content: const Text('อีเมลได้ถูกใช้แล้ว'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, 'OK'),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
                     }
                   },
                   shape: RoundedRectangleBorder(

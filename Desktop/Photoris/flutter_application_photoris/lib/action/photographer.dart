@@ -8,6 +8,8 @@ class PhotographerModel {
   late bool? status;
   late DocumentReference<Map<String, dynamic>>? user;
   late String? category;
+  late List<String>? url;
+  late bool? disabled;
 
   PhotographerModel({
     this.id,
@@ -17,7 +19,18 @@ class PhotographerModel {
     this.status,
     this.user,
     this.category,
+    this.url,
+    this.disabled,
   });
+
+  static List<T> toList<T>(dynamic list) {
+    if (list == null) return [];
+    final List<T> newList = [];
+    for (var l in list) {
+      newList.add(l);
+    }
+    return newList;
+  }
 
   factory PhotographerModel.fromJSON(dynamic json) {
     return PhotographerModel(
@@ -28,6 +41,8 @@ class PhotographerModel {
       status: json["status"] ?? false,
       user: json["User"],
       category: json["category"],
+      url: toList<String>(json["url"]),
+      disabled: json["disabled"] ?? false,
     );
   }
 
@@ -39,6 +54,8 @@ class PhotographerModel {
       "status": status,
       "User": user,
       "category": category,
+      "url": url,
+      "disabled": disabled,
     };
   }
 }

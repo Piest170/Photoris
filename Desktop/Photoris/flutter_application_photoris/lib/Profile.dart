@@ -397,7 +397,12 @@ class _ManState extends State<Man> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Upgrade()),
+                  MaterialPageRoute(
+                    builder: (context) => Upgrade(
+                      viewOnly: false,
+                      userId: "",
+                    ),
+                  ),
                 );
               },
               shape: RoundedRectangleBorder(
@@ -425,37 +430,65 @@ class _ManState extends State<Man> {
                                   ),
                                   TextButton(
                                     onPressed: () async {
-                                      final FirebaseAuth auth =
-                                          FirebaseAuth.instance;
+                                      final auth =
+                                          FirebaseAuth.instance.currentUser!;
+
+                                      print(auth);
+
                                       await FirebaseFirestore.instance
                                           .collection('User')
-                                          .doc(auth.currentUser?.uid)
+                                          .doc(auth.uid)
                                           .update({'status': 'Photographer'});
-                                      print(auth.currentUser?.uid);
+
                                       final user = await FirebaseFirestore
                                           .instance
                                           .collection('User')
-                                          .doc(auth.currentUser?.uid)
+                                          .doc(auth.uid)
                                           .get();
+
                                       final photographer =
                                           await FirebaseFirestore.instance
                                               .collection('Photographer')
-                                              .where('uid',
-                                                  isEqualTo:
-                                                      auth.currentUser?.uid)
+                                              .where('uid', isEqualTo: auth.uid)
                                               .get();
+
                                       if (photographer.docs.isEmpty) {
                                         await FirebaseFirestore.instance
                                             .collection('Photographer')
                                             .add({
                                           'User': user.reference,
-                                          'uid': auth.currentUser?.uid,
+                                          'uid': auth.uid,
+                                          "url": [],
+                                          "status": true,
+                                          "disabled": false,
                                         });
-                                      }
-                                      Navigator.push(
+                                        Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                              builder: (context) => Upgrade()));
+                                            builder: (context) => Upgrade(
+                                              userId: auth.uid,
+                                              viewOnly: false,
+                                            ),
+                                          ),
+                                        );
+                                      } else {
+                                        await FirebaseFirestore.instance
+                                            .collection('Photographer')
+                                            .doc(photographer.docs.first.id)
+                                            .update({
+                                          "disabled": false,
+                                          "status": true,
+                                        });
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => Upgrade(
+                                              userId: auth.uid,
+                                              viewOnly: false,
+                                            ),
+                                          ),
+                                        );
+                                      }
                                     },
                                     child: const Text('OK'),
                                   ),

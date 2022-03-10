@@ -42,6 +42,7 @@ dependencies:
   google_fonts: 2.2.0
   flutter_switch: ^0.3.2
   firebase_storage: ^10.2.9
+  image_picker: ^0.8.4+10
 
 dev_dependencies:
   flutter_test:
@@ -73,6 +74,7 @@ flutter:
     - photo/Group10.png
     - photo/Group11.png
     - photo/send.png
+    - photo/check1.png
 
 
   #   - images/a_dot_ham.jpeg

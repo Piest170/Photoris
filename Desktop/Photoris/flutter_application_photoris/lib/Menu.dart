@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_application_photoris/Search.dart';
 import 'package:flutter_application_photoris/Upgrade_Account.dart';
+import 'package:flutter_application_photoris/action/photographer.dart';
 import 'package:flutter_application_photoris/action/user.dart';
 
 import 'Profile.dart';
@@ -73,7 +74,10 @@ class theme extends StatelessWidget {
                                 context,
                                 new MaterialPageRoute(
                                   builder: (BuildContext context) =>
-                                      new Upgrade(),
+                                      new Upgrade(
+                                    viewOnly: false,
+                                    userId: auth!.uid,
+                                  ),
                                 ),
                               );
                             } else {
@@ -133,22 +137,30 @@ class _MenuState extends State<Menu> {
 
 class Suggest extends StatelessWidget {
   Suggest({Key? key}) : super(key: key);
-  final auth = FirebaseAuth.instance.currentUser;
+  final auth = FirebaseAuth.instance.currentUser!;
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection("Photographer")
-            .where("uid", isNotEqualTo: auth!.uid)
+            .where("status", isEqualTo: true)
+            .where("disabled", isEqualTo: false)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return SizedBox();
           }
 
-          final List<dynamic> _photographers =
-              snapshot.data!.docs.map((e) => e.data()).toList();
+          final List<PhotographerModel> _photographers = [];
+
+          snapshot.data!.docs.forEach((e) {
+            final _p = PhotographerModel.fromJSON(e.data());
+            _p.id = e.id;
+            if (_p.uid != auth.uid) {
+              _photographers.add(_p);
+            }
+          });
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,81 +186,118 @@ class Suggest extends StatelessWidget {
                   mainAxisSpacing: 20,
                   childAspectRatio: 0.8,
                   children: [
-                    for (int i = 0; i < _photographers.length; i++)
+                    for (var p in _photographers)
                       FutureBuilder<DocumentSnapshot>(
-                          future: _photographers[i]["User"].get(),
+                          future: p.user!.get(),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
                               return SizedBox();
                             }
 
-                            final dynamic _user = snapshot.data!.data();
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                              ),
-                              child: Stack(
-                                children: [
-                                  Positioned(
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(20),
-                                      child: Image.network(
-                                        "${_user['photo']}",
-                                        height: 200,
+                            final _user =
+                                UserModel.fromJSON(snapshot.data!.data());
+                            final photo = p.url!.isEmpty ? null : p.url!.first;
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Upgrade(
+                                      viewOnly: true,
+                                      userId: _user.userid!,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                ),
+                                child: Stack(
+                                  children: [
+                                    Positioned(
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: Image.network(
+                                          photo != null
+                                              ? "$photo"
+                                              : "https://firebasestorage.googleapis.com/v0/b/photoris-6b7cc.appspot.com/o/iLjEDPHXgRZiO5voA1WGLOmr3c4I8d8QUQRrnMYLSX4.webp?alt=media&token=d9bc927f-dcdd-45b8-b884-3a4277dfbdf1",
+                                          height: 200,
+                                          width: 160,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      top: 0,
+                                    ),
+                                    Positioned(
+                                      top: 0,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.3),
+                                          borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(20),
+                                            topRight: Radius.circular(20),
+                                          ),
+                                        ),
                                         width: 160,
-                                        fit: BoxFit.cover,
+                                        height: 55,
                                       ),
                                     ),
-                                    top: 0,
-                                  ),
-                                  Positioned(
-                                    top: 5,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 5, horizontal: 5),
-                                      child: Row(
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(100),
-                                            child: Container(
-                                              color: Colors.white,
-                                              padding: EdgeInsets.all(2),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(100),
-                                                child: Image.network(
-                                                  "${_user['photo']}",
-                                                  height: 30,
-                                                  width: 30,
-                                                  fit: BoxFit.cover,
+                                    Positioned(
+                                      top: 5,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 5, horizontal: 5),
+                                        child: Row(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(100),
+                                              child: Container(
+                                                color: Colors.white,
+                                                padding: EdgeInsets.all(2),
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          100),
+                                                  child: Image.network(
+                                                    "${_user.photo}",
+                                                    height: 30,
+                                                    width: 30,
+                                                    fit: BoxFit.cover,
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                          SizedBox(width: 5),
-                                          Text(
-                                            "${_user['fullname']}",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              shadows: <Shadow>[
-                                                Shadow(
-                                                  color: Colors.black
-                                                      .withOpacity(0.5),
-                                                  offset: Offset(0, 1),
-                                                  blurRadius: 0.1,
+                                            SizedBox(width: 5),
+                                            Container(
+                                              width: 100,
+                                              child: Text(
+                                                "${_user.fullname}",
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  shadows: <Shadow>[
+                                                    Shadow(
+                                                      color: Colors.black
+                                                          .withOpacity(0.5),
+                                                      offset: Offset(0, 1),
+                                                      blurRadius: 0.1,
+                                                    ),
+                                                  ],
                                                 ),
-                                              ],
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             );
                           }),
@@ -270,6 +319,7 @@ class Filtered extends StatefulWidget {
 
 class _FilteredState extends State<Filtered> {
   final costs = [
+    "ไม่กำหนด",
     'ต่ำกว่า 1,000 บาท',
     '1,000-5,000 บาท',
     '5,000-10,000 บาท',
@@ -277,12 +327,24 @@ class _FilteredState extends State<Filtered> {
     '15,000 บาทขึ้นไป'
   ];
   final locations = [
+    "ไม่กำหนด",
     'ภาคเหนือ',
     'ภาคใต้',
     'ภาคกลาง',
     'ภาคตะวันออกเฉียงเหนือ',
     'ภาคตะวันออก'
   ];
+
+  final List<Map<String, dynamic>> categories = [
+    {"icon": Icons.photo_album, "value": "All Photo"},
+    {"icon": Icons.landscape_sharp, "value": "View"},
+    {"icon": Icons.school, "value": "Graduate"},
+    {"icon": Icons.favorite, "value": "Wedding"},
+    {"icon": Icons.account_circle, "value": "Portrait"},
+    {"icon": Icons.liquor_rounded, "value": "Product"},
+    {"icon": Icons.event, "value": "Event"}
+  ];
+
   String? cost;
   String? location;
   String? cate;
@@ -374,174 +436,35 @@ class _FilteredState extends State<Filtered> {
             runSpacing: 20.0,
             direction: Axis.horizontal,
             children: <Widget>[
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    cate = "All_Photo";
-                  });
-                },
-                child: Container(
-                  padding: EdgeInsets.all(4),
-                  decoration: selectbox("All_Photo"),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.photo_album,
-                        color: Colors.black,
-                        size: 30.0,
-                      ),
-                      Container(
-                        margin: EdgeInsets.all(0),
-                        child: Text("All Photo"),
-                      ),
-                    ],
+              for (var c in categories)
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (cate == c["value"]) {
+                        cate = null;
+                      } else {
+                        cate = c["value"];
+                      }
+                    });
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: selectbox("${c['value']}"),
+                    child: Column(
+                      children: [
+                        Icon(
+                          c["icon"],
+                          color: Colors.black,
+                          size: 30.0,
+                        ),
+                        Container(
+                          margin: EdgeInsets.all(0),
+                          child: Text("${c['value']}"),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    cate = "view";
-                  });
-                },
-                child: Container(
-                  padding: EdgeInsets.all(4),
-                  decoration: selectbox("view"),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.landscape_sharp,
-                        color: Colors.black,
-                        size: 30.0,
-                      ),
-                      Container(
-                        margin: EdgeInsets.all(0),
-                        child: Text("View"),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    cate = "graduate";
-                  });
-                },
-                child: Container(
-                  padding: EdgeInsets.all(4),
-                  decoration: selectbox("graduate"),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.school,
-                        color: Colors.black,
-                        size: 30.0,
-                      ),
-                      Container(
-                        margin: EdgeInsets.all(0),
-                        child: Text("Graduate"),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    cate = "wedding";
-                  });
-                },
-                child: Container(
-                  padding: EdgeInsets.all(4),
-                  decoration: selectbox("wedding"),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.favorite,
-                        color: Colors.black,
-                        size: 30.0,
-                      ),
-                      Container(
-                        margin: EdgeInsets.all(0),
-                        child: Text("Wedding"),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    cate = "portrait";
-                  });
-                },
-                child: Container(
-                  padding: EdgeInsets.all(4),
-                  decoration: selectbox("portrait"),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.account_circle,
-                        color: Colors.black,
-                        size: 30.0,
-                      ),
-                      Container(
-                        margin: EdgeInsets.all(0),
-                        child: Text("Portrait"),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    cate = "product";
-                  });
-                },
-                child: Container(
-                  padding: EdgeInsets.all(4),
-                  decoration: selectbox("product"),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.liquor_rounded,
-                        color: Colors.black,
-                        size: 30.0,
-                      ),
-                      Container(
-                        margin: EdgeInsets.all(0),
-                        child: Text("Product"),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    cate = "event";
-                  });
-                },
-                child: Container(
-                  padding: EdgeInsets.all(4),
-                  decoration: selectbox("event"),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.event,
-                        color: Colors.black,
-                        size: 30.0,
-                      ),
-                      Container(
-                        margin: EdgeInsets.all(0),
-                        child: Text("Event"),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -555,7 +478,13 @@ class _FilteredState extends State<Filtered> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => search()),
+                  MaterialPageRoute(
+                    builder: (context) => search(
+                      category: cate,
+                      cost: cost,
+                      location: location,
+                    ),
+                  ),
                 );
               },
               shape: RoundedRectangleBorder(
@@ -565,10 +494,11 @@ class _FilteredState extends State<Filtered> {
               child: Text(
                 'ค้นหา',
                 style: TextStyle(
-                    color: Colors.white,
-                    letterSpacing: 1.5,
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold),
+                  color: Colors.white,
+                  letterSpacing: 1.5,
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
