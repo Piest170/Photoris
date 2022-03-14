@@ -27,7 +27,7 @@ class Auth {
         lineId: '-',
         website: '-',
         detail: '-',
-        status: "user",
+        status: "User",
       ));
       return true;
     } on FirebaseAuthException catch (e) {
@@ -39,7 +39,6 @@ class Auth {
       }
     } catch (e) {
       return false;
-      print(e);
     }
   }
 

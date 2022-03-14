@@ -3,8 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_photoris/Login.dart';
 
-import 'Profile.dart';
-
 class usersetting extends StatefulWidget {
   final void Function() onEdit;
   final void Function() onSave;

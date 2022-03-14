@@ -65,6 +65,9 @@ class _registerState extends State<register> {
                   },
                   keyboardType: TextInputType.emailAddress,
                   controller: emailController,
+                  inputFormatters: <TextInputFormatter>[
+                    LengthLimitingTextInputFormatter(20)
+                  ],
                   style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'someone@email.com',
@@ -91,6 +94,9 @@ class _registerState extends State<register> {
                       RequiredValidator(errorText: 'กรุณาป้อนข้อมูลส่วนนี้'),
                   keyboardType: TextInputType.name,
                   controller: nameController,
+                  inputFormatters: <TextInputFormatter>[
+                    LengthLimitingTextInputFormatter(20)
+                  ],
                   style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'Name',
@@ -110,12 +116,17 @@ class _registerState extends State<register> {
                   right: 50,
                 ),
                 child: TextFormField(
-                  validator:
-                      RequiredValidator(errorText: 'กรุณาป้อนข้อมูลส่วนนี้'),
+                  validator: (String? phone) {
+                    RequiredValidator(errorText: 'กรุณากรอกข้อมูลส่วนนี้');
+                    if (phone!.length < 10) {
+                      return "กรุณากรอกข้อมูลให้ครบ";
+                    }
+                  },
                   keyboardType: TextInputType.text,
                   controller: phoneController,
                   inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10)
                   ],
                   style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
@@ -137,6 +148,7 @@ class _registerState extends State<register> {
                 ),
                 child: TextFormField(
                   validator: (String? password) {
+                    RequiredValidator(errorText: "กรุณากรอกข้อมูลส่วนนี้");
                     if (password!.length < 8) {
                       return 'กรุณากรอกมากกว่า 8 ตัวอักษร';
                     }
@@ -146,6 +158,9 @@ class _registerState extends State<register> {
                   autocorrect: false,
                   keyboardType: TextInputType.visiblePassword,
                   controller: passwordController,
+                  inputFormatters: <TextInputFormatter>[
+                    LengthLimitingTextInputFormatter(15)
+                  ],
                   style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'password',
@@ -166,6 +181,7 @@ class _registerState extends State<register> {
                 ),
                 child: TextFormField(
                   validator: (String? password) {
+                    RequiredValidator(errorText: "กรุณากรอกข้อมูลส่วนนี้");
                     if (password!.length < 8) {
                       return 'กรุณากรอกมากกว่า 8 ตัวอักษร';
                     }
@@ -175,6 +191,9 @@ class _registerState extends State<register> {
                   autocorrect: false,
                   keyboardType: TextInputType.visiblePassword,
                   controller: confirmpasswordController,
+                  inputFormatters: <TextInputFormatter>[
+                    LengthLimitingTextInputFormatter(15)
+                  ],
                   style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'Confirm password',

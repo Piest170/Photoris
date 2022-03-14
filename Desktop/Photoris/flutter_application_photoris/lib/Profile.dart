@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_application_photoris/Upgrade_Account.dart';
 import 'package:flutter_application_photoris/action/user.dart';
 import 'package:flutter_application_photoris/setting.dart';
@@ -205,6 +206,7 @@ class _ManState extends State<Man> {
                   ? Expanded(
                       child: TextField(
                         controller: nameController,
+                        inputFormatters: [LengthLimitingTextInputFormatter(20)],
                         style: TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           labelStyle:
@@ -246,6 +248,10 @@ class _ManState extends State<Man> {
                   ? Expanded(
                       child: TextField(
                         controller: phoneController,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(10)
+                        ],
                         style: TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           labelStyle:

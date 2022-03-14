@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_application_photoris/action/comment.dart';
 import 'package:flutter_application_photoris/action/like.dart';
 import 'package:flutter_application_photoris/action/photographer.dart';
@@ -142,7 +143,7 @@ class _UpgradeState extends State<Upgrade> {
                                             await FirebaseFirestore.instance
                                                 .collection("User")
                                                 .doc(auth.uid)
-                                                .update({"status": "user"});
+                                                .update({"status": "User"});
 
                                             Navigator.pushReplacement(
                                               context,
@@ -264,9 +265,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     websiteController.text = widget.user.website!;
     lineIdController.text = widget.user.lineId!;
 
-    cost = widget.photographer.cost ?? "";
-    location = widget.photographer.location ?? "";
-    category = widget.photographer.category ?? "";
+    cost = widget.photographer.cost;
+    location = widget.photographer.location;
+    category = widget.photographer.category;
 
     _tabController = TabController(vsync: this, length: 2);
     _tabController.addListener(() {
@@ -499,6 +500,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                   ? Expanded(
                                       child: TextField(
                                         controller: nameController,
+                                        inputFormatters: <TextInputFormatter>[
+                                          LengthLimitingTextInputFormatter(20)
+                                        ],
                                         style: TextStyle(color: Colors.white),
                                         decoration: InputDecoration(
                                           labelStyle: new TextStyle(
@@ -541,6 +545,11 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                   ? Expanded(
                                       child: TextField(
                                         controller: phoneController,
+                                        inputFormatters: <TextInputFormatter>[
+                                          FilteringTextInputFormatter
+                                              .digitsOnly,
+                                          LengthLimitingTextInputFormatter(10)
+                                        ],
                                         style: TextStyle(color: Colors.white),
                                         decoration: InputDecoration(
                                           labelStyle: new TextStyle(
@@ -730,7 +739,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                       ),
                                     )
                                   : Text(
-                                      "$location",
+                                      "${location ?? ''}",
                                       style: TextStyle(
                                         fontSize: 20.0,
                                         color: Colors.white,
@@ -781,7 +790,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                       ),
                                     )
                                   : Text(
-                                      "$cost",
+                                      "${cost ?? ''}",
                                       style: TextStyle(
                                         fontSize: 20.0,
                                         color: Colors.white,
@@ -833,7 +842,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                       ),
                                     )
                                   : Text(
-                                      "${category}",
+                                      "${category ?? ''}",
                                       style: TextStyle(
                                         fontSize: 20.0,
                                         color: Colors.white,
@@ -1042,6 +1051,44 @@ class Comment extends StatefulWidget {
 class _CommentState extends State<Comment> {
   final auth = FirebaseAuth.instance.currentUser!;
   final textController = TextEditingController();
+  bool isEdit = false;
+  String? editCommentId;
+
+  editComment() async {
+    await FirebaseFirestore.instance
+        .collection("Comment")
+        .doc(editCommentId)
+        .update({"text": textController.text});
+    textController.clear();
+    isEdit = false;
+    editCommentId = null;
+    setState(() {});
+  }
+
+  deleteComment(String id) async {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm delete?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await FirebaseFirestore.instance
+                  .collection("Comment")
+                  .doc(id)
+                  .delete();
+              Navigator.pop(context);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   postComment() async {
     final user =
@@ -1212,14 +1259,35 @@ class _CommentState extends State<Comment> {
                 SizedBox(
                   width: 10,
                 ),
-                GestureDetector(
-                  onTap: postComment,
-                  child: Image.asset(
-                    "photo/send.png",
-                    width: 30,
-                    height: 30,
-                  ),
-                ),
+                isEdit
+                    ? GestureDetector(
+                        onTap: () {
+                          editComment();
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.black,
+                          ),
+                          child: Text(
+                            "edit",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      )
+                    : GestureDetector(
+                        onTap: postComment,
+                        child: Image.asset(
+                          "photo/send.png",
+                          width: 30,
+                          height: 30,
+                        ),
+                      ),
               ],
             ),
           ),
@@ -1259,6 +1327,36 @@ class _CommentState extends State<Comment> {
                               height: 5,
                             ),
                             Text("${c.text}"),
+                            auth.uid == c.uid
+                                ? Column(
+                                    children: [
+                                      SizedBox(height: 5),
+                                      Row(children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            textController.text = c.text ?? "";
+                                            setState(() {
+                                              isEdit = true;
+                                              editCommentId = c.id;
+                                            });
+                                          },
+                                          child: Text("Edit",
+                                              style: TextStyle(
+                                                  color: Colors.blue)),
+                                        ),
+                                        SizedBox(width: 20),
+                                        GestureDetector(
+                                          onTap: () {
+                                            deleteComment(c.id!);
+                                          },
+                                          child: Text("Delete",
+                                              style:
+                                                  TextStyle(color: Colors.red)),
+                                        )
+                                      ])
+                                    ],
+                                  )
+                                : SizedBox(),
                           ],
                         ),
                       ],
